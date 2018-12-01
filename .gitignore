@@ -2,9 +2,4 @@
 .idea/
 .idea/*
 data/SIGNS
-experiments/base_model/best.pth.tar
-experiments/base_model/last.pth.tar
-experiments/base_model/metrics_val_best_weights.json
-experiments/base_model/metrics_val_last_weights.json
-experiments/base_model/train.log
 
