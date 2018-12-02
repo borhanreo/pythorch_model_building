@@ -106,6 +106,7 @@ if __name__ == '__main__':
 
     # fetch dataloaders
     dataloaders = data_loader.fetch_dataloader(['test'], args.data_dir, params)
+
     test_dl = dataloaders['test']
 
     logging.info("- done.")
