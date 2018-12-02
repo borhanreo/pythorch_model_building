@@ -1,6 +1,10 @@
 """Evaluates the model"""
 
 import argparse
+import numpy
+import threading
+
+import cv2
 import logging
 import os
 
@@ -14,6 +18,7 @@ import model.data_loader as data_loader
 parser = argparse.ArgumentParser()
 parser.add_argument('--data_dir', default='data/64x64_SIGNS', help="Directory containing the dataset")
 parser.add_argument('--model_dir', default='experiments/base_model', help="Directory containing params.json")
+#parser.add_argument('--model_dir', default='data', help="Directory containing params.json")
 parser.add_argument('--restore_file', default='best', help="name of the file in --model_dir \
                      containing weights to load")
 
@@ -37,17 +42,21 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     summ = []
 
     # compute metrics over the dataset
-    for data_batch, labels_batch in dataloader:
+    for data_batch, labels_batch, name in dataloader:
 
         # move to GPU if available
         if params.cuda:
             data_batch, labels_batch = data_batch.cuda(async=True), labels_batch.cuda(async=True)
         # fetch the next evaluation batch
-        data_batch, labels_batch = Variable(data_batch), Variable(labels_batch)
-        
+
+        data_batch, labels_batch, name = Variable(data_batch), Variable(labels_batch),name
+
+        #print(data_batch, labels_batch)
         # compute model output
         output_batch = model(data_batch)
         loss = loss_fn(output_batch, labels_batch)
+
+        writing_text(name,loss)
 
         # extract data from torch Variable, move to cpu, convert to numpy arrays
         output_batch = output_batch.data.cpu().numpy()
@@ -64,8 +73,14 @@ def evaluate(model, loss_fn, dataloader, metrics, params):
     metrics_string = " ; ".join("{}: {:05.3f}".format(k, v) for k, v in metrics_mean.items())
     logging.info("- Eval metrics : " + metrics_string)
     return metrics_mean
+def writing_text(name,loss):
+    pass
+    # print('I am ',name,'\n'+str(loss.data[0])+'\n')
 
-
+    #print(type(image))
+    # cv2.imshow('Test image', image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
 if __name__ == '__main__':
     """
         Evaluate the model on the test set.
@@ -107,6 +122,7 @@ if __name__ == '__main__':
     utils.load_checkpoint(os.path.join(args.model_dir, args.restore_file + '.pth.tar'), model)
 
     # Evaluate
+
     test_metrics = evaluate(model, loss_fn, test_dl, metrics, params)
     save_path = os.path.join(args.model_dir, "metrics_test_{}.json".format(args.restore_file))
     utils.save_dict_to_json(test_metrics, save_path)

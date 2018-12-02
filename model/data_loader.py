@@ -1,3 +1,4 @@
+import cv2
 import random
 import os
 
@@ -52,9 +53,18 @@ class SIGNSDataset(Dataset):
             image: (Tensor) transformed image
             label: (int) corresponding label of image
         """
+
+        # print(self.filenames[idx])
+        # image = cv2.imread(self.filenames[idx])
+        # print(type(image))
+        #
+        # cv2.imshow('Test image', image)
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
+
         image = Image.open(self.filenames[idx])  # PIL image
         image = self.transform(image)
-        return image, self.labels[idx]
+        return image, self.labels[idx], self.filenames[idx]
 
 
 def fetch_dataloader(types, data_dir, params):
